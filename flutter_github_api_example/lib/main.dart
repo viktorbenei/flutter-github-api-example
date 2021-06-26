@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:github/github.dart';
+import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
 void main() {
   runApp(MyApp());
@@ -48,15 +50,25 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
+  void _login() async {
+    var flow = new OAuth2Flow('ClientID', 'ClientSecret');
+    var authUrl = flow.createAuthorizeUrl();
+    await url_launcher.launch(authUrl);
+
+    // // Display to the User and handle the redirect URI, and also get the code.
+    // flow.exchange(code).then((response) {
+    //   var github =
+    //       new GitHub(auth: new Authentication.withToken(response.token));
+    //   // Use the GitHub Client
+    // });
+    // setState(() {
+    //   // This call to setState tells the Flutter framework that something has
+    //   // changed in this State, which causes it to rerun the build method below
+    //   // so that the display can reflect the updated values. If we changed
+    //   // _counter without calling setState(), then the build method would not be
+    //   // called again, and so nothing would appear to happen.
+    //   _counter++;
+    // });
   }
 
   @override
@@ -104,9 +116,9 @@ class _MyHomePageState extends State<MyHomePage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: Icon(Icons.add),
+        onPressed: _login,
+        tooltip: 'Login',
+        child: Icon(Icons.login),
       ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
