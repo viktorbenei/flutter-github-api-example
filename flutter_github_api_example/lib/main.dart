@@ -158,6 +158,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     final String token = await onToken.first;
     print("Received token " + token);
+    await url_launcher.closeWebView();
 
     // // Display to the User and handle the redirect URI, and also get the code.
     // flow.exchange(code).then((response) {
