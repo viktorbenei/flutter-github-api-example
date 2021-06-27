@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:github/github.dart';
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
 
+// !!! Don't store your client ID and Secret in the code in an actual production app!
+// Generate your own GitHub OAuth App at https://github.com/settings/developers
+// Related docs: https://docs.github.com/en/developers/apps/building-oauth-apps/creating-an-oauth-app
+const githubExampleClientID = '44e3e830d78863129ec2';
+const githubExampleClientSecret = '811750ccf65c2d4872adaf86c27c59ca1d9b0d52';
+
 void main() {
   runApp(MyApp());
 }
@@ -24,7 +30,74 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
+      // routes: {
+      //   '/': (context) => MyHomePage(title: 'Flutter Demo Home Page'),
+      //   // '/oauth-redirect-callback': (context) => OAuthCallbackPage(),
+      // },
+      // initialRoute: '/',
+      onGenerateRoute: (settings) {
+        if (settings.name == '/') {
+          return MaterialPageRoute(
+            builder: (context) => MyHomePage(title: 'Flutter Demo Home Page'),
+          );
+        }
+
+        // // If you push the PassArguments route
+        // if (settings.name == PassArgumentsScreen.routeName) {
+        //   // Cast the arguments to the correct
+        //   // type: ScreenArguments.
+        //   final args = settings.arguments as ScreenArguments;
+
+        //   // Then, extract the required data from
+        //   // the arguments and pass the data to the
+        //   // correct screen.
+        //   return MaterialPageRoute(
+        //     builder: (context) {
+        //       return PassArgumentsScreen(
+        //         title: args.title,
+        //         message: args.message,
+        //       );
+        //     },
+        //   );
+        // }
+
+        // The code only supports
+        // PassArgumentsScreen.routeName right now.
+        // Other values need to be implemented if we
+        // add them. The assertion here will help remind
+        // us of that higher up in the call stack, since
+        // this assertion would otherwise fire somewhere
+        // in the framework.
+        assert(false, 'Need to implement ${settings.name}');
+        return null;
+      },
+      onUnknownRoute: (settings) {
+        assert(false, 'Need to implement ${settings.name}');
+        return null;
+      },
+    );
+  }
+}
+
+class OAuthCallbackPage extends StatelessWidget {
+  OAuthCallbackPage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('GitHub OAuth Callback'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'GitHub OAuth callback was successful!',
+            ),
+          ],
+        ),
+      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
@@ -51,9 +124,13 @@ class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
   void _login() async {
-    var flow = new OAuth2Flow('ClientID', 'ClientSecret');
+    var flow = new OAuth2Flow(githubExampleClientID, githubExampleClientSecret);
     var authUrl = flow.createAuthorizeUrl();
-    await url_launcher.launch(authUrl);
+    await url_launcher.launch(
+      authUrl,
+      forceSafariVC: false,
+      forceWebView: false,
+    );
 
     // // Display to the User and handle the redirect URI, and also get the code.
     // flow.exchange(code).then((response) {
