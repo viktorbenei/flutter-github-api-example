@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:github/github.dart';
 import 'package:url_launcher/url_launcher.dart' as url_launcher;
@@ -123,14 +126,38 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
+  static Future<Stream<String>> _server() async {
+    final StreamController<String> onCode = new StreamController();
+    HttpServer server =
+        await HttpServer.bind(InternetAddress.loopbackIPv4, 8080, shared: true);
+    server.listen((HttpRequest request) async {
+      final String? code = request.uri.queryParameters["code"];
+      if (code == null) {
+        throw 'No code query param found';
+      }
+      request.response
+        ..statusCode = 200
+        ..headers.set("Content-Type", ContentType.html.mimeType)
+        ..write("<html><h1>You can now close this window</h1></html>");
+      await request.response.close();
+      await server.close(force: true);
+      onCode.add(code);
+      await onCode.close();
+    });
+    return onCode.stream;
+  }
+
   void _login() async {
+    Stream<String> onToken = await _server();
+
     var flow = new OAuth2Flow(githubExampleClientID, githubExampleClientSecret);
     var authUrl = flow.createAuthorizeUrl();
     await url_launcher.launch(
       authUrl,
-      forceSafariVC: false,
-      forceWebView: false,
     );
+
+    final String token = await onToken.first;
+    print("Received token " + token);
 
     // // Display to the User and handle the redirect URI, and also get the code.
     // flow.exchange(code).then((response) {
