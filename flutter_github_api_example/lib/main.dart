@@ -126,6 +126,7 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _counter = 0;
 
+  /// Based on https://github.com/Anmol92verma/FlutterGithubClient/blob/master/lib/network/Github.dart
   static Future<Stream<String>> _server() async {
     final StreamController<String> onCode = new StreamController();
     HttpServer server =
@@ -148,24 +149,41 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _login() async {
-    Stream<String> onToken = await _server();
+    Stream<String> onCode = await _server();
 
-    var flow = new OAuth2Flow(githubExampleClientID, githubExampleClientSecret);
+    // Scopes documentation: https://docs.github.com/en/developers/apps/building-oauth-apps/scopes-for-oauth-apps
+    var flow = new OAuth2Flow(
+      githubExampleClientID,
+      githubExampleClientSecret,
+      scopes: ['user:email'],
+    );
     var authUrl = flow.createAuthorizeUrl();
+    print("DEBUG: authUrl: $authUrl");
     await url_launcher.launch(
       authUrl,
     );
 
-    final String token = await onToken.first;
-    print("Received token " + token);
-    await url_launcher.closeWebView();
+    final String code = await onCode.first;
+    print("Received code " + code);
+    try {
+      await url_launcher.closeWebView();
+    } catch (error) {
+      // closeWebView isn't implemented yet for some platforms (macOS, Windows)
+      // but we can safely ignore this and the page is opened
+      // in the browser.
+      print("Failed to close webview: $error");
+    }
 
-    // // Display to the User and handle the redirect URI, and also get the code.
-    // flow.exchange(code).then((response) {
-    //   var github =
-    //       new GitHub(auth: new Authentication.withToken(response.token));
-    //   // Use the GitHub Client
-    // });
+    try {
+      var response = await flow.exchange(code);
+      var github =
+          new GitHub(auth: new Authentication.withToken(response.token));
+      // Use the GitHub Client
+      var currentUser = await github.users.getCurrentUser();
+      print("Current user email: ${currentUser.email}");
+    } catch (error) {
+      print("Failed to exchange code with GitHub: $error");
+    }
     // setState(() {
     //   // This call to setState tells the Flutter framework that something has
     //   // changed in this State, which causes it to rerun the build method below
