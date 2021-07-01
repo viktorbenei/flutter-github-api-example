@@ -155,7 +155,7 @@ class _MyHomePageState extends State<MyHomePage> {
     var flow = new OAuth2Flow(
       githubExampleClientID,
       githubExampleClientSecret,
-      scopes: ['user:email'],
+      scopes: ['user:email', 'repo'],
     );
     var authUrl = flow.createAuthorizeUrl();
     print("DEBUG: authUrl: $authUrl");
@@ -181,6 +181,14 @@ class _MyHomePageState extends State<MyHomePage> {
       // Use the GitHub Client
       var currentUser = await github.users.getCurrentUser();
       print("Current user email: ${currentUser.email}");
+      print("Private repos count: ${currentUser.privateReposCount}");
+      var repos = await github.repositories.listRepositories();
+      print("Private Repositories:");
+      repos.forEach((aRepo) {
+        if (aRepo.isPrivate) {
+          print("* ${aRepo.name}");
+        }
+      });
     } catch (error) {
       print("Failed to exchange code with GitHub: $error");
     }
