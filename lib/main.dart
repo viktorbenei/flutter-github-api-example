@@ -182,7 +182,7 @@ class _MyHomePageState extends State<MyHomePage> {
       var currentUser = await github.users.getCurrentUser();
       print("Current user email: ${currentUser.email}");
       print("Private repos count: ${currentUser.privateReposCount}");
-      var repos = await github.repositories.listRepositories();
+      var repos = github.repositories.listRepositories();
       print("Private Repositories:");
       repos.forEach((aRepo) {
         if (aRepo.isPrivate) {
