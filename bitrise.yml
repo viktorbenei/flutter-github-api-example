@@ -1,0 +1,43 @@
+---
+format_version: '11'
+default_step_lib_source: 'https://github.com/bitrise-io/bitrise-steplib.git'
+project_type: flutter
+trigger_map:
+- push_branch: '*'
+  workflow: primary
+- pull_request_source_branch: '*'
+  workflow: primary
+workflows:
+  primary:
+    steps:
+    - activate-ssh-key@4:
+        run_if: '{{getenv "SSH_RSA_PRIVATE_KEY" | ne ""}}'
+    - git-clone@6: {}
+    - script@1:
+        title: Do anything with Script step
+    - flutter-installer@0:
+        inputs:
+        - is_update: 'false'
+    - cache-pull@2: {}
+    - flutter-analyze@0:
+        inputs:
+        - project_location: $BITRISE_FLUTTER_PROJECT_LOCATION
+    - flutter-test@1:
+        inputs:
+        - project_location: $BITRISE_FLUTTER_PROJECT_LOCATION
+    - deploy-to-bitrise-io@1: {}
+    - cache-push@2: {}
+app:
+  envs:
+  - opts:
+      is_expand: false
+    BITRISE_FLUTTER_PROJECT_LOCATION: .
+  - opts:
+      is_expand: false
+    BITRISE_PROJECT_PATH: ./ios/Runner.xcworkspace
+  - opts:
+      is_expand: false
+    BITRISE_SCHEME: Runner
+  - opts:
+      is_expand: false
+    BITRISE_EXPORT_METHOD: ad-hoc
