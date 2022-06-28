@@ -187,6 +187,11 @@ class _MyHomePageState extends State<MyHomePage> {
       repos.forEach((aRepo) {
         if (aRepo.isPrivate) {
           print("* ${aRepo.name}");
+
+          var prs = github.pullRequests.list(aRepo.slug());
+          prs.forEach((aPR) {
+            print("  -> PR: #${aPR.number} - ${aPR.title}");
+          });
         }
       });
     } catch (error) {
